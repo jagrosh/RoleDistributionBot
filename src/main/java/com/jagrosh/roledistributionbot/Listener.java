@@ -62,7 +62,7 @@ public class Listener implements EventListener
                 && event.getGuild().getSelfMember().hasPermission(Permission.MANAGE_ROLES))
         {
             event.getMessage().addReaction("\u23F1").queue(); // ⏱
-            event.getGuild().loadMembers(m -> addRole(member))
+            event.getGuild().loadMembers(m -> addRole(m))
                     .onSuccess(v -> event.getMessage().addReaction("\u2705").queue()); // ✅
         }
     }
