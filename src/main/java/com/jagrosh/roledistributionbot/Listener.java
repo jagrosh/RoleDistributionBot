@@ -75,27 +75,34 @@ public class Listener implements EventListener
             {
                 event.getMessage().addReaction("\u23F1").queue(); // ⏱
                 List<Role> validRoles = getValidRoles(event.getGuild());
-                Object lock = new Object();
-                int[] counts = new int[validRoles.size() + 1];
-                event.getGuild().loadMembers(m -> 
+                if(validRoles.isEmpty())
                 {
-                    synchronized(lock)
-                    {
-                        counts[counts.length - 1]++;
-                        Role role = getRole(m, validRoles);
-                        if(m.getRoles().contains(role))
-                            counts[validRoles.indexOf(role)]++;
-                    }
-                }).onSuccess(v -> 
+                    event.getChannel().sendMessage("No roles").queue();
+                }
+                else
                 {
-                    synchronized(lock)
+                    Object lock = new Object();
+                    int[] counts = new int[validRoles.size() + 1];
+                    event.getGuild().loadMembers(m -> 
                     {
-                        StringBuilder sb = new StringBuilder("`Members` - `" + counts[counts.length - 1] + "`");
-                        for(int i = 0; i < validRoles.size(); i++)
-                            sb.append("\n`").append(validRoles.get(i).getName()).append("` - `").append(counts[i]).append("`");
-                        event.getChannel().sendMessage(sb.toString()).queue();
-                    }
-                });
+                        synchronized(lock)
+                        {
+                            counts[counts.length - 1]++;
+                            Role role = getRole(m, validRoles);
+                            if(m.getRoles().contains(role))
+                                counts[validRoles.indexOf(role)]++;
+                        }
+                    }).onSuccess(v -> 
+                    {
+                        synchronized(lock)
+                        {
+                            StringBuilder sb = new StringBuilder("`Members` - `" + counts[counts.length - 1] + "`");
+                            for(int i = 0; i < validRoles.size(); i++)
+                                sb.append("\n`").append(validRoles.get(i).getName()).append("` - `").append(counts[i]).append("`");
+                            event.getChannel().sendMessage(sb.toString()).queue();
+                        }
+                    });
+                }
             }
         }
     }
