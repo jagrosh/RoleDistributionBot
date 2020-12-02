@@ -34,7 +34,7 @@ public class Main
     {
         Config config = ConfigFactory.load();
         JDABuilder.createLight(config.getString("bot-token"), GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES)
-                .addEventListeners(new Listener(config.getString("command"), config.getLongList("roles")))
+                .addEventListeners(new Listener(config.getString("command"), config.getString("command2"), config.getLongList("roles")))
                 .setMemberCachePolicy(MemberCachePolicy.NONE)
                 .disableCache(EnumSet.allOf(CacheFlag.class))
                 .setChunkingFilter(ChunkingFilter.NONE)
