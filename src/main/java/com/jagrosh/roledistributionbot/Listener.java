@@ -22,9 +22,12 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.GenericEvent;
+import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -32,6 +35,7 @@ import net.dv8tion.jda.api.hooks.EventListener;
  */
 public class Listener implements EventListener
 {
+    private final Logger log = LoggerFactory.getLogger("RoleDist");
     private final String command, command2;
     private final List<Long> roles;
     
@@ -49,11 +53,18 @@ public class Listener implements EventListener
             onGuildMemberJoin((GuildMemberJoinEvent) ge);
         else if (ge instanceof GuildMessageReceivedEvent)
             onGuildMessageReceived((GuildMessageReceivedEvent) ge);
+        else if (ge instanceof ReadyEvent)
+            onReady((ReadyEvent) ge);
     }
     
     private void onGuildMemberJoin(GuildMemberJoinEvent event)
     {
         addRole(event.getMember());
+    }
+    
+    private void onReady(ReadyEvent event)
+    {
+        event.getJDA().getGuilds().forEach(g -> g.loadMembers(m -> addRole(m)));
     }
     
     private void onGuildMessageReceived(GuildMessageReceivedEvent event)
@@ -119,7 +130,9 @@ public class Listener implements EventListener
         
         Role role = getRole(member, validRoles);
         if(!member.getRoles().contains(role))
-            member.getGuild().addRoleToMember(member, role).queue();
+            member.getGuild().addRoleToMember(member, role).queue(
+                    s -> log.info("Added " + role.getId() + " to " + member.getId() + " in " + member.getGuild().getId()), 
+                    f -> log.info("Failed adding " + role.getId() + " to " + member.getId() + " in " + member.getGuild().getId()));
     }
     
     private List<Role> getValidRoles(Guild guild)
